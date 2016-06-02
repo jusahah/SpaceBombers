@@ -86,6 +86,16 @@ module.exports = function (grunt) {
         { files: 'src/audio/**/*'
         , tasks: ['copy:audio']
         }
+      , tilemaps: 
+        {
+          files: 'src/tilemaps/**/*',
+          tasks: ['copy:tilemaps']
+        } 
+      , css: 
+        {
+          files: 'src/style/*.css',
+          tasks: ['copy:css']
+        }         
       }
 
     , browserify:
@@ -168,12 +178,23 @@ module.exports = function (grunt) {
     , copy:
       { images:
         { files:
-          [ { expand: true, cwd: 'src/images/', src: ['**'], dest: 'build/images/' }
+          [ { expand: true, cwd: 'src/images/', src: ['**'], dest: 'build/images/' },
+            { expand: true, cwd: 'src/tilemaps/', src: ['**'], dest: 'build/tilemaps/'}
           ]
         }
       , audio:
         { files:
           [ { expand: true, cwd: 'src/audio/', src: ['**'], dest: 'build/audio/' }
+          ]
+        }
+      , tilemaps:
+        { files:
+          [ { expand: true, cwd: 'src/tilemaps/', src: ['**'], dest: 'build/tilemaps/' }
+          ]
+        }
+      , css: 
+        { files:
+          [ { expand: true, cwd: 'src/style/', src: ['**'], dest: 'build/style/' }
           ]
         }
       }

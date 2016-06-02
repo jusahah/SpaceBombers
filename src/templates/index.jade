@@ -8,15 +8,21 @@ head
   meta(property="og:description", content=properties.description)
 
   link(rel='stylesheet', href='style/index.css')
+  link(rel='stylesheet', href='style/main.css')
 
   title=properties.title
-
+  
+  script(src="//cdn.jsdelivr.net/phaser/2.3.0/phaser.min.js")
   script(src="js/app.min.js")
 
   include analytics.jade
 
 body
   #game
+  #views
+    #gP1View
+    #dividor
+    #gP2View
 
   if (!productionBuild)
     script.

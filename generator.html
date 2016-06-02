@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="">
+	<style>
+		#mapVisual table {
+			border-spacing: 0;
+		}
+
+		#mapVisual table tr {
+			margin: 0;
+			padding: 0;
+		}
+		#mapVisual table td {
+			margin: 0;
+			padding: 0;
+			width: 8px;
+			height: 8px;
+			font-size: 4px;
+		}
+		td.square_0 {
+			background-color: #fff;
+		}		
+		td.square_1 {
+			background-color: #eee;
+		}	
+		td.square_2 {
+			background-color: #ddd;
+		}	
+		td.square_3 {
+			background-color: #cdcdcd;
+		}	
+		td.square_4 {
+			background-color: #000;
+		}			
+		td.square_5 {
+			background-color: #777;
+		}
+		td.square_6 {
+			background-color: #565656;
+		}
+		td.square_7 {
+			background-color: #444;
+		}
+		td.square_8 {
+			background-color: #333;
+		}
+		td.square_9 {
+			background-color: #222;
+		}								
+		td.square_10 {
+			background-color: #111;
+		}
+		td.square_11 {
+			background-color: red;
+		}		
+	</style>
+</head>
+<body>
+
+<textarea cols="80" rows="10" id="map_text" style="font-size: 9px;"></textarea>
+<button id="createMap" onclick="createFinalMap()">Create</button>
+
+<div id="mapVisual">
+
+
+</div>
+
+<button id="terrainSelected">Terrain</button>
+<button id="skySelected">Sky</button>
+<button id="fuelSelected">Fuel</button>
+	
+
+
+<script>
+var cachedMap;
+var currentlySelected = 0;
+
+//var skyTiles = [0,1,2,3];
+
+function createEmptyMap(width, height) {
+
+	var map = [];
+
+	for (var i = 0; i < height; i++) {		
+		var row = [];
+		for (var j = 0; j < width; j++) {
+			// Initial randomness to sky background
+			// Actual formation (clouds, etc) are created later
+			row[j] = Math.random() < 0.25 ? 0 : 1;
+		};
+		map[i] = row;
+	};
+
+	return map;
+}
+
+
+function populate(map, valueMin, valueCap, iterations, bulletsPerIteration, variationInBulletAmount, timesOnSpot) {
+
+	variationInBulletAmount = variationInBulletAmount || 0;
+	timesOnSpot = timesOnSpot || 1;
+	var height = map.length;
+	var width  = map[0].length;
+
+	for (var i = iterations; i >= 0; i--) {
+			var currStartPoint = {x: Math.floor(Math.random()*(width-2)), y: Math.floor(Math.random()*(height-2))};
+			for (var t = 0; t < timesOnSpot; t++) {
+				var currBullAmount = bulletsPerIteration + Math.round((Math.random()-0.5)*variationInBulletAmount);
+				if (currBullAmount < 1) currBullAmount = 1;
+				shootSpread(map, bulletsPerIteration, function(map, y, x) {
+					var currValue = map[y][x];
+					if (currValue >= valueCap) return currValue;
+					if (currValue < valueMin) return valueMin;
+					return currValue + 1;
+				}, currStartPoint);
+			};
+	};
+
+	
+} 
+
+function shootSpread(map, amount, tileFunction, startPoint) {
+
+	var height = map.length;
+	var width  = map[0].length;
+
+	startPoint = startPoint || {x: Math.floor(Math.random()*(width-2)), y: Math.floor(Math.random()*(height-2))};
+	var currPoint = {x: startPoint.x, y: startPoint.y};
+
+	for (var i =  0; i < amount; i++) {
+		//Client-defined function which was passed in decides the next value for the tile
+		map[currPoint.y][currPoint.x] = tileFunction(map, currPoint.y, currPoint.x);
+		var xRnd = Math.random();
+		var yRnd = Math.random();
+
+		if (xRnd < 0.33) {
+			if (currPoint.x < width-1) ++currPoint.x;
+		} 
+		else if (xRnd > 0.66) {
+			if (currPoint.x > 0) --currPoint.x;
+		}
+		if (yRnd < 0.33) {
+			if (currPoint.y < height-1) ++currPoint.y;
+		} 
+		else if (yRnd > 0.66) {
+			if (currPoint.y > 0) --currPoint.y;
+		} 
+	};
+
+	return true;
+
+}
+
+
+
+function flattenMap(map) {
+	return [].concat.apply([], map);
+}
+
+function ensureBordersOnMap(map, borderValue) {
+
+	var height = map.length;
+	if (height === 0) return false;
+	var width  = map[0].length;
+
+	// Upper and lower borders
+	for (var i = 0; i < width; i++) {
+		map[0][i] = borderValue;
+		map[height-1][i] = borderValue;
+	};
+
+	// Left and right borders
+	for (var j = 0; j < height; j++) {
+		map[j][0] = borderValue;
+		map[j][width-1] = borderValue;
+	};
+
+}
+
+function replaceCell(cellX, cellY, value) {
+
+	cachedMap[cellX][cellY] = value;
+	makeTextOfMap(cachedMap);
+	makeVisualMap(cachedMap);
+}
+
+function makeTextOfMap(map) {
+
+	var flattened = flattenMap(map);
+	var textDiv = document.getElementById('map_text');
+	textDiv.innerHTML = '[' + flattened + ']';
+}
+
+function createFinalMap() {
+	var w = 50;
+	var h = 50;
+	var map = createEmptyMap(w, h);
+	//Args to populate
+	//function populate(map, valueMin, valueCap, iterations, bulletsPerIteration, variationInBulletAmount, timesOnSpot)
+	populate(map, 0, 3, 8, 80, 0, 7); // Sky population
+	populate(map, 5, 10, 1, 127, 0, 12); // Terrain population
+	populate(map, 5, 10, 22, 5, 0, 2); // Terrain population
+	ensureBordersOnMap(map, 6);
+	makeTextOfMap(map);
+	makeVisualMap(map);
+	cachedMap = map;
+
+}
+
+function makeVisualMap(map) {
+
+	var html = "<table><tbody>";
+
+	for (var i = 0; i < map.length; i++) {		
+		var row = map[i];
+		html += "<tr>";
+		for (var j = 0; j < row.length; j++) {
+			if (row > 10) row = 10;
+			html += "<td class='square_" + row[j] + "' data-row='" + i + "' data-column='" + j + "'>" + row[j] + "</td>";
+		}
+
+		html += "</tr>";
+	}
+
+	html += "</tbody></table>";
+
+	document.getElementById('mapVisual').innerHTML = html;
+
+}
+
+function readVisualIntoMap() {
+
+	var table = document.getElementByTagName('table');
+	var text = "[";
+
+	for (var i = 0, row; row = table.rows[i]; i++) {
+	   //iterate through rows
+	   //rows would be accessed using the "row" variable assigned in the for loop
+	   for (var j = 0, col; col = row.cells[j]; j++) {
+	     text += row.cells[j].innerHTML + ",";
+	   }  
+	}
+
+	text += "]";
+	document.getElementById('map_text').innerHTML = text;
+
+}
+
+document.getElementById('fuelSelected').addEventListener('click', function() {
+	currentlySelected = 11;
+});
+
+document.getElementById('terrainSelected').addEventListener('click', function() {
+	currentlySelected = Math.round(Math.random() * 4) + 5;
+});
+
+document.getElementById('skySelected').addEventListener('click', function() {
+	currentlySelected = Math.round(Math.random()*2);
+});
+
+document.getElementById('mapVisual').addEventListener('click', function(e) {
+	//console.log(e.target);
+	var cellX = e.target.dataset.row;
+	var cellY = e.target.dataset.column;
+
+	console.log(cellX + " | " + cellY);
+	replaceCell(cellX, cellY, currentlySelected);
+
+
+});
+
+
+//createFinalMap();
+
+
+
+</script>
+
+</body>
+</html>

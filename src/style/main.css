@@ -1,0 +1,29 @@
+body {
+	background-color: black;
+}
+
+#views {
+
+	width: 1030px;
+	height: 400px;
+	margin: auto;
+	margin-top: 120px;
+}
+
+#gP1View, #gP2View {
+
+	width: 500px;
+	height: 400px;
+	display: inline-block;
+	margin: 0px;
+
+
+}
+
+#dividor {
+	width: 25px;
+	height: 400px;
+	margin: 0px;
+	display: inline-block;
+	background-color: #331111;
+}
